@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
+import { SaveDashboardModal } from './SaveDashboardModal';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
-import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent } from 'lucide-react';
+import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, Layers } from 'lucide-react';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -34,7 +35,7 @@ const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) => {
       if (aggType === 'avg') return count > 0 ? Number((sum / count).toFixed(2)) : 0;
       return sum;
     }
-    return processedData.length; // default to count
+    return processedData.length;
   }
 
   if (type === 'percent') {
@@ -60,7 +61,6 @@ const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) => {
   if (type === 'pie' || type === 'bar' || type === 'line') {
     const grouped = {};
     
-    // Use the full dataset to guarantee all categories exist on the X-axis
     dataset.forEach(row => {
       const xVal = row[xKey] || 'Unknown';
       if (!grouped[xVal]) {
@@ -73,12 +73,11 @@ const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) => {
       if (yKey && typeof row[yKey] === 'number') {
         grouped[xVal].sum += row[yKey];
       } else {
-        grouped[xVal].value += 1; // count
+        grouped[xVal].value += 1;
       }
       grouped[xVal].count += 1;
     });
     
-    // Convert to array and apply average if needed
     const result = Object.values(grouped).map(g => {
       if (yKey) {
         g.value = aggType === 'avg' ? Number((g.sum / g.count).toFixed(2)) : g.sum;
@@ -86,11 +85,10 @@ const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) => {
       return g;
     });
 
-    return result.sort((a,b) => b.value - a.value).slice(0, 15); // limit points
+    return result.sort((a,b) => b.value - a.value).slice(0, 15);
   }
   
-  // For scatter/line without agg
-  return processedData.slice(0, 100); // sample
+  return processedData.slice(0, 100);
 };
 
 const Widget = ({ config, dataset, onRemove }) => {
@@ -124,10 +122,10 @@ const Widget = ({ config, dataset, onRemove }) => {
         return (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="name" stroke="#94a3b8" tick={{fill: '#94a3b8'}} angle={-45} textAnchor="end" height={60} />
-              <YAxis stroke="#94a3b8" tick={{fill: '#94a3b8'}} />
-              <Tooltip contentStyle={{backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px'}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey="name" stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} angle={-45} textAnchor="end" height={60} />
+              <YAxis stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
+              <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />
               <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -136,13 +134,13 @@ const Widget = ({ config, dataset, onRemove }) => {
         return (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Tooltip contentStyle={{backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px'}} />
+              <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />
               <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Legend verticalAlign="bottom" height={36} wrapperStyle={{color: '#94a3b8'}}/>
+              <Legend verticalAlign="bottom" height={36} wrapperStyle={{color: 'var(--color-textMuted)'}}/>
             </PieChart>
           </ResponsiveContainer>
         );
@@ -150,10 +148,10 @@ const Widget = ({ config, dataset, onRemove }) => {
         return (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey={config.xAxis} stroke="#94a3b8" tick={{fill: '#94a3b8'}} />
-              <YAxis stroke="#94a3b8" tick={{fill: '#94a3b8'}} />
-              <Tooltip contentStyle={{backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px'}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey={config.xAxis} stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
+              <YAxis stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
+              <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />
               <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
             </LineChart>
           </ResponsiveContainer>
@@ -180,6 +178,7 @@ const Widget = ({ config, dataset, onRemove }) => {
 
 export function DashboardBuilder() {
   const { dataset, schema, widgets, addWidget, removeWidget, updateWidget, layout: storeLayout, setLayout } = useDashboardStore();
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const handleCreateWidget = () => {
     addWidget({
@@ -203,7 +202,7 @@ export function DashboardBuilder() {
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
       {/* Sidebar Controls */}
       <div className="w-80 bg-surface border-r border-border flex flex-col items-stretch overflow-y-auto custom-scrollbar">
-        <div className="p-5 border-b border-border sticky top-0 bg-surface z-10">
+        <div className="p-5 border-b border-border sticky top-0 bg-surface z-10 space-y-2">
           <button 
             onClick={handleCreateWidget}
             className="w-full flex items-center justify-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 py-2.5 rounded-lg transition-colors font-medium"
@@ -211,6 +210,22 @@ export function DashboardBuilder() {
             <Plus className="w-4 h-4" />
             Add Widget
           </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowSaveModal(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
+            >
+              <Save className="w-3.5 h-3.5 text-textMuted" />
+              Save
+            </button>
+            <button
+              onClick={() => setShowSaveModal(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
+            >
+              <Layers className="w-3.5 h-3.5 text-textMuted" />
+              Template
+            </button>
+          </div>
         </div>
 
         <div className="p-4 space-y-6">
@@ -404,6 +419,8 @@ export function DashboardBuilder() {
           </GridLayout>
         )}
       </div>
+
+      <SaveDashboardModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </div>
   );
 }
