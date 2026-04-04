@@ -3,13 +3,31 @@ import { UploadSection } from './components/UploadSection';
 import { DataPreview } from './components/DataPreview';
 import { DashboardBuilder } from './components/DashboardBuilder';
 import { useDashboardStore } from './store/useDashboardStore';
-import { LayoutDashboard, Download, Share2 } from 'lucide-react';
+import { LayoutDashboard, Download, Share2, Sun, Moon } from 'lucide-react';
 import axios from 'axios';
 
 function App() {
   const { currentStep, dataFilename, schema, widgets, layout } = useDashboardStore();
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Theme state
+  const [isDarkMode, setIsDarkMode] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true; // Default to dark mode logically since it was the original theme
+  });
+
+  React.useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(prev => !prev);
 
   const handleExport = async () => {
     try {
@@ -70,14 +88,23 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background text-textMain transition-colors duration-200">
       <header className="h-16 border-b border-border bg-surface/50 backdrop-blur shrink-0 px-6 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
             <LayoutDashboard className="w-5 h-5" />
           </div>
-          <h1 className="font-bold text-xl tracking-tight text-white">MetricsFlow</h1>
+          <h1 className="font-bold text-xl tracking-tight">MetricsFlow</h1>
         </div>
+        
+        <div className="flex gap-3 items-center">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-surface border border-border text-textMuted hover:text-textMain transition-colors"
+            title="Toggle theme"
+          >
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
         
         {currentStep === 3 && (
           <div className="flex gap-3">
@@ -99,6 +126,7 @@ function App() {
             </button>
           </div>
         )}
+        </div>
       </header>
       <main className="flex-1 flex flex-col">
         {currentStep === 1 && <UploadSection />}

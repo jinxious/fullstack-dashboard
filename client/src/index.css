@@ -3,8 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-background: #f8fafc;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+    --color-primary: #3b82f6;
+    --color-primaryHover: #2563eb;
+    --color-textMain: #0f172a;
+    --color-textMuted: #64748b;
+  }
+
+  .dark {
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-primary: #3b82f6;
+    --color-primaryHover: #2563eb;
+    --color-textMain: #f8fafc;
+    --color-textMuted: #94a3b8;
+  }
+
   body {
-    @apply bg-background text-textMain antialiased;
+    @apply bg-background text-textMain antialiased transition-colors duration-200;
   }
 }
 
