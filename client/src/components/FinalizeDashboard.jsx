@@ -27,9 +27,24 @@ export function FinalizeDashboard() {
 
   // Ensure layout covers all widgets
   const layout = widgets.map((w, i) => {
+    const isHeader = w.type === 'header';
+    const isText = w.type === 'text';
+    const targetMinH = isHeader ? 1 : isText ? 2 : 3;
+
     const existing = storeLayout?.find(l => l.i === w.id);
-    if (existing) return existing;
-    return { i: w.id, x: (i * 6) % 12, y: Infinity, w: 6, h: 4, minW: 3, minH: 3 };
+    if (existing) {
+      return { ...existing, minH: targetMinH };
+    }
+    
+    return { 
+      i: w.id, 
+      x: (i * 6) % 12, 
+      y: Infinity, 
+      w: isHeader ? 12 : 6, 
+      h: isHeader ? 1 : isText ? 3 : 4, 
+      minW: 3, 
+      minH: targetMinH 
+    };
   });
 
   const handleSave = async () => {

@@ -112,12 +112,13 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
             {inFinalizeMode && !isExporting ? (
               <input
                 type="text"
-                value={config.content || 'Section Header'}
+                value={config.content !== undefined ? config.content : 'Section Header'}
                 onChange={(e) => updateWidget(config.id, { content: e.target.value })}
+                placeholder="Enter section header..."
                 className="w-full text-2xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary/20 p-2 rounded"
               />
             ) : (
-              <h2 className="text-2xl font-bold">{config.content || 'Section Header'}</h2>
+              <h2 className="text-2xl font-bold">{config.content !== undefined && config.content !== '' ? config.content : 'Section Header'}</h2>
             )}
           </div>
         );
@@ -126,7 +127,7 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
           <div className="w-full h-full p-4 overflow-y-auto">
             {inFinalizeMode && !isExporting ? (
               <textarea
-                value={config.content || ''}
+                value={config.content !== undefined ? config.content : ''}
                 onChange={(e) => updateWidget(config.id, { content: e.target.value })}
                 placeholder="Type your notes or insights here..."
                 className="w-full h-full resize-none bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary/20 p-2 rounded text-textMain"
