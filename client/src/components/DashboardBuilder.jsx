@@ -260,7 +260,10 @@ export function DashboardBuilder() {
       <div
         ref={canvasRef}
         className="flex-1 bg-background overflow-y-auto p-6 relative dashboard-canvas-container"
-        onClick={() => setSelectedWidgetId(null)}
+        onMouseDown={(e) => {
+          // Only deselect if clicking the actual background, not a child
+          if (e.target === e.currentTarget) setSelectedWidgetId(null);
+        }}
       >
         {widgets.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-textMuted p-8 text-center max-w-sm mx-auto">
@@ -283,8 +286,7 @@ export function DashboardBuilder() {
               <div
                 key={widget.id}
                 onMouseDown={(e) => {
-                  // Select immediately on press — most reliable approach
-                  // (click events get swallowed by Recharts SVG & react-grid-layout)
+                  e.stopPropagation();
                   setSelectedWidgetId(widget.id);
                 }}
                 className={`h-full rounded-xl transition-all duration-150 cursor-pointer ${
