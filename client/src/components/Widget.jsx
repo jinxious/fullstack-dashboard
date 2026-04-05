@@ -93,7 +93,7 @@ export const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) 
   return processedData.slice(0, 100);
 };
 
-export const Widget = ({ config, dataset, onRemove, onSelect, inFinalizeMode = false }) => {
+export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) => {
   const { dashboardTheme, isExporting, updateWidget } = useDashboardStore();
   const data = useMemo(() => aggregateData(dataset, config.xAxis, config.yAxis, config.type, config.aggType, config.filters), [dataset, config]);
   
@@ -222,10 +222,7 @@ export const Widget = ({ config, dataset, onRemove, onSelect, inFinalizeMode = f
   const isTextType = config.type === 'header' || config.type === 'text';
 
   return (
-    <div
-      onClick={(e) => { e.stopPropagation(); onSelect && onSelect(config.id); }}
-      className={`bg-surface border border-border flex flex-col h-full rounded-xl shadow-sm group ${isExporting ? 'border-none shadow-none !bg-transparent !overflow-visible' : 'overflow-hidden'}`}
-    >
+    <div className={`bg-surface border border-border flex flex-col h-full rounded-xl shadow-sm group ${isExporting ? 'border-none shadow-none !bg-transparent !overflow-visible' : 'overflow-hidden'}`}>
       {/* Header bar only shows if not exporting, or if it's not a text widget */}
       {(!isExporting || (!isTextType && config.title)) && !isTextType && (
         <div className={`flex items-center justify-between px-4 py-3 border-b border-border bg-surface/80 ${isExporting ? '!bg-transparent !border-transparent' : ''}`}>
