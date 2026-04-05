@@ -39,9 +39,23 @@ function DashboardFlow() {
 // Main layout with navigation
 function AppLayout({ children }) {
   const { isAuthenticated, user, logout } = useAuthStore();
-  const { currentStep, resetDashboard } = useDashboardStore();
+  const { currentStep, resetDashboard, dataset, widgets } = useDashboardStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [showConfirmNew, setShowConfirmNew] = useState(false);
+
+  // Protect against accidental browser refreshes if there's unsaved work
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (dataset || widgets.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [dataset, widgets]);
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -71,14 +85,50 @@ function AppLayout({ children }) {
   };
 
   const handleNewDashboard = () => {
+    setShowConfirmNew(false);
     resetDashboard();
     navigate('/dashboard');
+  };
+
+  const handleNewClick = (e) => {
+    e.preventDefault();
+    if (dataset || widgets.length > 0) {
+      setShowConfirmNew(true);
+    } else {
+      handleNewDashboard();
+    }
   };
 
   const isOnDashboard = location.pathname === '/dashboard';
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-textMain transition-colors duration-200">
+      {/* Confirmation Modal */}
+      {showConfirmNew && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface border border-border shadow-2xl rounded-2xl w-full max-w-md overflow-hidden p-6 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold mb-2">Unsaved Work</h2>
+            <p className="text-textMuted mb-6">
+              You are currently working on a dashboard. If you create a new one, all unsaved changes will be lost. Do you want to discard your changes?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowConfirmNew(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-background transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleNewDashboard}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/20"
+              >
+                Discard & Create New
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="h-16 border-b border-border bg-surface/50 backdrop-blur shrink-0 px-6 flex items-center justify-between sticky top-0 z-50">
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-6">
@@ -91,14 +141,14 @@ function AppLayout({ children }) {
 
           {isAuthenticated && (
             <nav className="hidden md:flex items-center gap-1 ml-4">
-              <Link
-                to="/dashboard"
+              <button
+                onClick={handleNewClick}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
                   ${location.pathname === '/dashboard' ? 'bg-primary/10 text-primary' : 'text-textMuted hover:text-textMain hover:bg-surface'}`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 New
-              </Link>
+              </button>
               <Link
                 to="/my-dashboards"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
