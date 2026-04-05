@@ -108,12 +108,9 @@ export function FinalizeDashboard() {
       .text-textMain { color: var(--color-textMain); }
       .text-textMuted { color: var(--color-textMuted); }
       
-      /* Reset grid layout absolute positioning for static export */
-      .react-grid-layout { position: relative !important; height: auto !important; display: flex; flex-wrap: wrap; gap: 20px; }
-      .react-grid-item { position: static !important; width: calc(50% - 10px) !important; transform: none !important; margin-bottom: 20px; overflow: visible !important; }
-      .react-grid-item[style*="width: 1200px"] { width: 100% !important; }
-      .react-grid-item[style*="width: 900px"] { width: 75% !important; }
-      .react-grid-item[style*="width: 300px"] { width: 25% !important; }
+      /* Preserve exact layout placement while allowing overflow for labels */
+      .react-grid-layout { height: 100%; }
+      .react-grid-item { overflow: visible !important; }
       
       /* Recharts static view fixes */
       .recharts-wrapper svg { background: transparent !important; overflow: visible !important; }
