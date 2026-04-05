@@ -129,22 +129,19 @@ export function FinalizeDashboard() {
     try {
       setExportingType(type);
       
-      // 1. Temporarily enable exporting mode so charts render static labels, remove borders, etc.
+      // Enable export mode so charts render with static labels
       setIsExporting(true);
       
-      // Give React a moment to re-render the DOM with LabelLists before capturing
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for React to re-render with LabelLists and SVG animations to settle
+      await new Promise(resolve => setTimeout(resolve, 1200));
 
       const dashboardElement = document.querySelector('.dashboard-export-wrapper');
       if (!dashboardElement) throw new Error('No dashboard found');
 
-      // Add a slight delay to ensure Recharts SVG animations have finished
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const htmlContent = generateHtmlExport(dashboardElement.innerHTML);
 
       if (type === 'html') {
-        // Download as HTML
+        // Download as HTML file
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -153,18 +150,38 @@ export function FinalizeDashboard() {
         document.body.appendChild(link);
         link.click();
         link.remove();
+        window.URL.revokeObjectURL(url);
         toast.success('HTML exported!');
+
       } else if (type === 'pdf') {
-        // Download as PDF via backend
-        const response = await api.post('/api/export/pdf', { htmlContent }, { responseType: 'blob' });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${dashboardTitle.replace(/\s+/g, '_')}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        toast.success('PDF exported!');
+        // Use browser native print — works on all hosting platforms (no Puppeteer needed)
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+          toast.error('Popup blocked! Please allow popups for this site and try again.');
+          return;
+        }
+
+        // Write the full HTML to the new window and trigger print
+        printWindow.document.write(htmlContent + `
+          <style>
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .dashboard-canvas { max-width: 100%; }
+            }
+          </style>
+        `);
+        printWindow.document.close();
+
+        // Wait for content (including Tailwind CDN) to fully load before printing
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            // Don't close automatically — user can close after saving PDF
+          }, 800);
+        };
+
+        toast.success('Print dialog opened — choose "Save as PDF" in your browser!');
       }
 
     } catch (err) {
@@ -172,7 +189,7 @@ export function FinalizeDashboard() {
       toast.error(`Failed to export ${type.toUpperCase()}`);
     } finally {
       setExportingType(null);
-      setIsExporting(false); // Switch back to interactive mode
+      setIsExporting(false);
     }
   };
 
