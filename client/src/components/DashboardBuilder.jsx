@@ -260,6 +260,7 @@ export function DashboardBuilder() {
             width={1200}
             isDraggable
             isResizable
+            resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
           >
             {widgets.map(widget => (
               <div key={widget.id}>

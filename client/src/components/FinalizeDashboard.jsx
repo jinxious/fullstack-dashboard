@@ -429,6 +429,7 @@ export function FinalizeDashboard() {
                   width={1152} // 1200px wrapper - 48px padding
                   isDraggable={!previewMode && !isExporting}
                   isResizable={!previewMode && !isExporting}
+                  resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
                   margin={[20, 20]} // Added more spacing for reporting
                 >
                   {widgets.map(widget => (
