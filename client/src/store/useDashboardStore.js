@@ -9,13 +9,27 @@ export const useDashboardStore = create((set) => ({
   // Dashboard State
   dashboardId: null,      // ID of loaded dashboard (null = new)
   dashboardTitle: 'Untitled Dashboard',
+  
+  // Customization State
+  dashboardMetadata: {
+    subtitle: '',
+    author: '',
+    date: new Date().toLocaleDateString()
+  },
+  dashboardTheme: {
+    fontFamily: 'sans-serif',
+    backgroundColor: 'var(--color-background)',
+    chartPalette: 'default' // 'default', 'monochrome', 'vibrant', 'pastel'
+  },
+  
   widgets: [],
   layout: [],
 
   // App State
   isUploading: false,
   uploadError: null,
-  currentStep: 1, // 1: Upload, 2: Preview, 3: Build
+  currentStep: 1, // 1: Upload, 2: Preview, 3: Build, 4: Finalize
+  isExporting: false,
 
   // Actions
   setDataset: (dataset, schema, dataFilename) => set({ dataset, schema, dataFilename, currentStep: 2, uploadError: null }),
@@ -23,6 +37,10 @@ export const useDashboardStore = create((set) => ({
   setUploadError: (uploadError) => set({ uploadError, isUploading: false }),
   setStep: (step) => set({ currentStep: step }),
   setDashboardTitle: (dashboardTitle) => set({ dashboardTitle }),
+  
+  setMetadata: (updates) => set((state) => ({ dashboardMetadata: { ...state.dashboardMetadata, ...updates } })),
+  setTheme: (updates) => set((state) => ({ dashboardTheme: { ...state.dashboardTheme, ...updates } })),
+  setIsExporting: (isExporting) => set({ isExporting }),
 
   addWidget: (widget) => set((state) => ({
     widgets: [...state.widgets, widget],
@@ -39,6 +57,8 @@ export const useDashboardStore = create((set) => ({
   loadDashboard: (config, data) => set({
     dashboardId: config.id || config._id || null,
     dashboardTitle: config.title || 'Untitled Dashboard',
+    dashboardMetadata: config.metadata || { subtitle: '', author: '', date: new Date().toLocaleDateString() },
+    dashboardTheme: config.theme || { fontFamily: 'sans-serif', backgroundColor: 'var(--color-background)', chartPalette: 'default' },
     schema: config.schema,
     widgets: config.widgets || [],
     layout: config.layout || [],
@@ -54,10 +74,13 @@ export const useDashboardStore = create((set) => ({
     dataFilename: null,
     dashboardId: null,
     dashboardTitle: 'Untitled Dashboard',
+    dashboardMetadata: { subtitle: '', author: '', date: new Date().toLocaleDateString() },
+    dashboardTheme: { fontFamily: 'sans-serif', backgroundColor: 'var(--color-background)', chartPalette: 'default' },
     widgets: [],
     layout: [],
     currentStep: 1,
     isUploading: false,
-    uploadError: null
+    uploadError: null,
+    isExporting: false
   })
 }));

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-r
 import { UploadSection } from './components/UploadSection';
 import { DataPreview } from './components/DataPreview';
 import { DashboardBuilder } from './components/DashboardBuilder';
+import { FinalizeDashboard } from './components/FinalizeDashboard';
 import { AuthPage } from './components/AuthPage';
 import { MyDashboards } from './components/MyDashboards';
 import { TemplateLibrary } from './components/TemplateLibrary';
@@ -30,6 +31,7 @@ function DashboardFlow() {
       {currentStep === 1 && <UploadSection />}
       {currentStep === 2 && <DataPreview />}
       {currentStep === 3 && <DashboardBuilder />}
+      {currentStep === 4 && <FinalizeDashboard />}
     </>
   );
 }
@@ -40,7 +42,6 @@ function AppLayout({ children }) {
   const { currentStep, resetDashboard } = useDashboardStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isExporting, setIsExporting] = useState(false);
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -63,44 +64,6 @@ function AppLayout({ children }) {
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
-  const handleExport = async () => {
-    try {
-      setIsExporting(true);
-      const dashboardElement = document.querySelector('.dashboard-canvas-container');
-      if (!dashboardElement) return alert('No dashboard found');
-
-      const htmlContent = `
-        <!DOCTYPE html><html><head>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          body { background: #0f172a; color: white; padding: 20px; font-family: sans-serif; }
-          .bg-surface { background: #1e293b; border: 1px solid #334155; }
-          .recharts-wrapper svg { background: transparent !important; }
-        </style>
-        </head><body>
-        <h1 class="text-2xl font-bold mb-6">Exported Dashboard</h1>
-        <div style="width: 1200px; height: 800px; position: relative;">
-          ${dashboardElement.innerHTML}
-        </div>
-        </body></html>
-      `;
-
-      const response = await api.post('/api/export/pdf', { htmlContent }, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'dashboard.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to generate PDF');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handleLogout = () => {
     logout();
     resetDashboard();
@@ -113,7 +76,6 @@ function AppLayout({ children }) {
   };
 
   const isOnDashboard = location.pathname === '/dashboard';
-  const showExport = isOnDashboard && currentStep === 3;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-textMain transition-colors duration-200">
@@ -166,17 +128,6 @@ function AppLayout({ children }) {
           >
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
-
-          {showExport && (
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg shadow-lg shadow-primary/20 transition-all text-sm font-medium disabled:opacity-50"
-            >
-              <Download className="w-4 h-4" />
-              {isExporting ? 'Generating...' : 'Export PDF'}
-            </button>
-          )}
 
           {isAuthenticated && (
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
