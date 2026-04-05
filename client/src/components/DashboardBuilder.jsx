@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { SaveDashboardModal } from './SaveDashboardModal';
 import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, ArrowRight, Type, Heading, MousePointer2 } from 'lucide-react';
@@ -11,7 +11,19 @@ export function DashboardBuilder() {
   const { dataset, schema, widgets, addWidget, removeWidget, updateWidget, layout: storeLayout, setLayout, setStep } = useDashboardStore();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState(null);
+  const [canvasWidth, setCanvasWidth] = useState(1200);
   const isDragging = useRef(false);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0]?.contentRect?.width;
+      if (width) setCanvasWidth(Math.floor(width - 24));
+    });
+    observer.observe(canvasRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const selectedWidget = widgets.find(w => w.id === selectedWidgetId);
 
@@ -246,6 +258,7 @@ export function DashboardBuilder() {
 
       {/* Main Canvas */}
       <div
+        ref={canvasRef}
         className="flex-1 bg-background overflow-y-auto p-6 relative dashboard-canvas-container"
         onClick={() => setSelectedWidgetId(null)}
       >
@@ -264,7 +277,7 @@ export function DashboardBuilder() {
             onDragStop={() => { setTimeout(() => { isDragging.current = false; }, 50); }}
             cols={12}
             rowHeight={80}
-            width={1200}
+            width={canvasWidth}
             isDraggable
             isResizable
           >
