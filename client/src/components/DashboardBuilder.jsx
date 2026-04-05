@@ -12,7 +12,7 @@ export function DashboardBuilder() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(1200);
-  const isDragging = useRef(false);
+  const mouseDownPos = useRef({ x: 0, y: 0 });
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -273,8 +273,6 @@ export function DashboardBuilder() {
             className="layout"
             layout={layout}
             onLayoutChange={(newLayout) => setLayout(newLayout)}
-            onDragStart={() => { isDragging.current = true; }}
-            onDragStop={() => { setTimeout(() => { isDragging.current = false; }, 50); }}
             cols={12}
             rowHeight={80}
             width={canvasWidth}
@@ -284,7 +282,13 @@ export function DashboardBuilder() {
             {widgets.map(widget => (
               <div
                 key={widget.id}
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) setSelectedWidgetId(widget.id); }}
+                onMouseDown={(e) => { mouseDownPos.current = { x: e.clientX, y: e.clientY }; }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const dx = Math.abs(e.clientX - mouseDownPos.current.x);
+                  const dy = Math.abs(e.clientY - mouseDownPos.current.y);
+                  if (dx < 5 && dy < 5) setSelectedWidgetId(widget.id);
+                }}
                 className={`h-full rounded-xl transition-all duration-150 cursor-pointer ${
                   selectedWidgetId === widget.id
                     ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/10'
