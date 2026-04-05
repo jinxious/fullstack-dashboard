@@ -39,3 +39,18 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Self-ping mechanism to keep Render server awake
+// Render free tier sleeps after 15 mins of inactivity. Ping every 14 mins.
+const https = require('https');
+if (process.env.RENDER_EXTERNAL_URL) {
+  const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
+  setInterval(() => {
+    console.log('Sending keep-awake ping...');
+    https.get(`${process.env.RENDER_EXTERNAL_URL}/api/health`, (res) => {
+      console.log(`Keep-awake ping status: ${res.statusCode}`);
+    }).on('error', (err) => {
+      console.log('Keep-awake ping failed:', err.message);
+    });
+  }, PING_INTERVAL);
+}
