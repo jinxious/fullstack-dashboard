@@ -24,25 +24,6 @@ export function DashboardBuilder() {
   const canvasRef = useRef(null);
   const settingsRefs = useRef({}); // refs for each widget's settings card
 
-  // ─── Document-level click handler (bypasses all RGL/Recharts event blocking) ───
-  useEffect(() => {
-    const handleClick = (e) => {
-      // Walk up DOM from clicked element looking for a widget
-      const widgetEl = e.target.closest('[data-widget-id]');
-      if (widgetEl) {
-        setSelectedWidgetId(widgetEl.dataset.widgetId);
-        return;
-      }
-      // If click was inside canvas but not on a widget → deselect
-      if (canvasRef.current && canvasRef.current.contains(e.target)) {
-        setSelectedWidgetId(null);
-      }
-    };
-
-    document.addEventListener('click', handleClick, true); // capture phase
-    return () => document.removeEventListener('click', handleClick, true);
-  }, []);
-
   // Auto-scroll sidebar to selected widget's settings card
   useEffect(() => {
     if (selectedWidgetId && settingsRefs.current[selectedWidgetId]) {
@@ -338,6 +319,7 @@ export function DashboardBuilder() {
       <div
         ref={canvasRef}
         className="flex-1 bg-background overflow-y-auto p-6 relative dashboard-canvas-container"
+        onClick={() => setSelectedWidgetId(null)}
       >
         {widgets.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-textMuted p-8 text-center max-w-sm mx-auto">
@@ -360,17 +342,20 @@ export function DashboardBuilder() {
             {widgets.map(widget => {
               const isSelected = selectedWidgetId === widget.id;
               return (
-                // data-widget-id is the key — document click handler uses .closest() to find this
                 <div
                   key={widget.id}
-                  data-widget-id={widget.id}
                   className={`h-full rounded-xl transition-all duration-150 ${
                     isSelected
                       ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-xl shadow-primary/15 scale-[1.005]'
                       : 'hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-background'
                   }`}
                 >
-                  <Widget config={widget} dataset={dataset} onRemove={handleRemove} />
+                  <Widget
+                    config={widget}
+                    dataset={dataset}
+                    onRemove={handleRemove}
+                    onSelect={(id) => { setSelectedWidgetId(id); }}
+                  />
                 </div>
               );
             })}
