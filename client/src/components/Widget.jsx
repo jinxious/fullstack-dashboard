@@ -178,9 +178,19 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
       case 'pie':
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: isExporting ? 20 : 0, right: isExporting ? 30 : 0, left: isExporting ? 30 : 0, bottom: 20 }}>
               {!isExporting && <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />}
-              <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} label={isExporting ? { fill: 'var(--color-textMain)', fontSize: 12 } : false}>
+              <Pie 
+                data={data} 
+                dataKey="value" 
+                nameKey="name" 
+                cx="50%" 
+                cy={isExporting ? "45%" : "50%"} 
+                innerRadius={isExporting ? 40 : 60} 
+                outerRadius={isExporting ? 60 : 80} 
+                paddingAngle={5} 
+                label={isExporting ? { fill: 'var(--color-textMain)', fontSize: 11 } : false}
+              >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
