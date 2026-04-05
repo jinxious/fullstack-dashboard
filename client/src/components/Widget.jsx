@@ -161,13 +161,13 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
       case 'bar':
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <BarChart data={data} margin={{ top: isExporting ? 35 : 20, right: isExporting ? 35 : 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis dataKey="name" stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} angle={-45} textAnchor="end" height={60} />
               <YAxis stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
               {!isExporting && <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />}
               <Bar dataKey="value" fill={primaryColor} radius={[4, 4, 0, 0]}>
-                {isExporting && <LabelList dataKey="value" position="top" fill="var(--color-textMain)" fontSize={12} />}
+                {isExporting && <LabelList dataKey="value" position="top" fill="var(--color-textMain)" fontSize={12} offset={10} />}
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
@@ -178,18 +178,18 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
       case 'pie':
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: isExporting ? 20 : 0, right: isExporting ? 30 : 0, left: isExporting ? 30 : 0, bottom: 20 }}>
+            <PieChart margin={{ top: isExporting ? 30 : 0, right: isExporting ? 30 : 0, left: isExporting ? 30 : 0, bottom: isExporting ? 30 : 20 }}>
               {!isExporting && <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />}
               <Pie 
                 data={data} 
                 dataKey="value" 
                 nameKey="name" 
                 cx="50%" 
-                cy={isExporting ? "45%" : "50%"} 
-                innerRadius={isExporting ? 40 : 60} 
-                outerRadius={isExporting ? 60 : 80} 
+                cy="50%" 
+                innerRadius={isExporting ? "30%" : "50%"} 
+                outerRadius={isExporting ? "60%" : "80%"} 
                 paddingAngle={5} 
-                label={isExporting ? { fill: 'var(--color-textMain)', fontSize: 11 } : false}
+                label={isExporting ? { fill: 'var(--color-textMain)', fontSize: 12 } : false}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
@@ -202,13 +202,13 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
       case 'line':
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart data={data} margin={{ top: isExporting ? 35 : 20, right: isExporting ? 35 : 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis dataKey={config.xAxis} stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
               <YAxis stroke="var(--color-textMuted)" tick={{fill: 'var(--color-textMuted)'}} />
               {!isExporting && <Tooltip contentStyle={{backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-textMain)'}} />}
               <Line type="monotone" dataKey="value" stroke={primaryColor} strokeWidth={3} dot={{r: 4, fill: primaryColor}} activeDot={{r: 8}}>
-                {isExporting && <LabelList dataKey="value" position="top" fill="var(--color-textMain)" fontSize={12} />}
+                {isExporting && <LabelList dataKey="value" position="top" fill="var(--color-textMain)" fontSize={12} offset={10} />}
               </Line>
             </LineChart>
           </ResponsiveContainer>
@@ -221,7 +221,7 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
   const isTextType = config.type === 'header' || config.type === 'text';
 
   return (
-    <div className={`bg-surface border border-border flex flex-col h-full rounded-xl overflow-hidden shadow-sm group ${isExporting ? 'border-none shadow-none !bg-transparent' : ''}`}>
+    <div className={`bg-surface border border-border flex flex-col h-full rounded-xl shadow-sm group ${isExporting ? 'border-none shadow-none !bg-transparent !overflow-visible' : 'overflow-hidden'}`}>
       {/* Header bar only shows if not exporting, or if it's not a text widget */}
       {(!isExporting || (!isTextType && config.title)) && !isTextType && (
         <div className={`flex items-center justify-between px-4 py-3 border-b border-border bg-surface/80 ${isExporting ? '!bg-transparent !border-transparent' : ''}`}>
