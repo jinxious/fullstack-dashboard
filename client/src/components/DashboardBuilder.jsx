@@ -56,38 +56,20 @@ export function DashboardBuilder() {
             Finalize & Download
             <ArrowRight className="w-4 h-4" />
           </button>
-          <div className="grid grid-cols-2 gap-2">
-            <button 
-              onClick={handleCreateWidget}
-              className="flex items-center justify-center gap-1.5 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 py-2 rounded-lg transition-colors text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              Chart
-            </button>
-            <button 
-              onClick={() => addWidget({ id: Date.now().toString(), type: 'text', content: '' })}
-              className="flex items-center justify-center gap-1.5 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
-            >
-              <Type className="w-3.5 h-3.5 text-textMuted" />
-              Text
-            </button>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={() => setShowSaveModal(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
-            >
-              <Save className="w-3.5 h-3.5 text-textMuted" />
-              Save
-            </button>
-            <button
-              onClick={() => setShowSaveModal(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
-            >
-              <Layers className="w-3.5 h-3.5 text-textMuted" />
-              Template
-            </button>
-          </div>
+          <button 
+            onClick={handleCreateWidget}
+            className="w-full flex items-center justify-center gap-1.5 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 py-2 rounded-lg transition-colors text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" />
+            Add Chart
+          </button>
+          <button
+            onClick={() => setShowSaveModal(true)}
+            className="w-full flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
+          >
+            <Save className="w-3.5 h-3.5 text-textMuted" />
+            Save Dashboard
+          </button>
         </div>
 
         <div className="p-4 space-y-6">
