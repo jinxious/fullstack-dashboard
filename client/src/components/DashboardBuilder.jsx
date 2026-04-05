@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { SaveDashboardModal } from './SaveDashboardModal';
 import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, ArrowRight, Type, Heading, MousePointer2 } from 'lucide-react';
@@ -11,6 +11,7 @@ export function DashboardBuilder() {
   const { dataset, schema, widgets, addWidget, removeWidget, updateWidget, layout: storeLayout, setLayout, setStep } = useDashboardStore();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState(null);
+  const isDragging = useRef(false);
 
   const selectedWidget = widgets.find(w => w.id === selectedWidgetId);
 
@@ -259,6 +260,8 @@ export function DashboardBuilder() {
             className="layout"
             layout={layout}
             onLayoutChange={(newLayout) => setLayout(newLayout)}
+            onDragStart={() => { isDragging.current = true; }}
+            onDragStop={() => { setTimeout(() => { isDragging.current = false; }, 50); }}
             cols={12}
             rowHeight={80}
             width={1200}
@@ -268,7 +271,7 @@ export function DashboardBuilder() {
             {widgets.map(widget => (
               <div
                 key={widget.id}
-                onClick={(e) => { e.stopPropagation(); setSelectedWidgetId(widget.id); }}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) setSelectedWidgetId(widget.id); }}
                 className={`h-full rounded-xl transition-all duration-150 cursor-pointer ${
                   selectedWidgetId === widget.id
                     ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/10'
