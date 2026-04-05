@@ -282,12 +282,10 @@ export function DashboardBuilder() {
             {widgets.map(widget => (
               <div
                 key={widget.id}
-                onMouseDown={(e) => { mouseDownPos.current = { x: e.clientX, y: e.clientY }; }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const dx = Math.abs(e.clientX - mouseDownPos.current.x);
-                  const dy = Math.abs(e.clientY - mouseDownPos.current.y);
-                  if (dx < 5 && dy < 5) setSelectedWidgetId(widget.id);
+                onMouseDown={(e) => {
+                  // Select immediately on press — most reliable approach
+                  // (click events get swallowed by Recharts SVG & react-grid-layout)
+                  setSelectedWidgetId(widget.id);
                 }}
                 className={`h-full rounded-xl transition-all duration-150 cursor-pointer ${
                   selectedWidgetId === widget.id
