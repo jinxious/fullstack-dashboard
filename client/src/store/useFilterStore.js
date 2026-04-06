@@ -7,21 +7,18 @@ const detectColumnType = (values) => {
   
   // Date detection
   const datePatterns = [
-    /^\d{4}-\d{2}-\d{2}/, // ISO
-    /^\d{2}[\/\-]\d{2}[\/\-]\d{4}/, // DD/MM/YYYY or DD-MM-YYYY
-    /^[A-Za-z]{3,9}\s\d{1,2},?\s\d{4}/, // Month Day, Year
+    /^\d{4}-\d{2}-\d{2}/,
+    /^\d{2}[\/\-]\d{2}[\/\-]\d{4}/,
+    /^[A-Za-z]{3,9}\s\d{1,2},?\s\d{4}/,
   ];
   if (datePatterns.some(p => p.test(String(nonNull[0])))) return 'date';
   
-  // Number detection
+  // Number detection — if 90%+ of values are numeric, treat as number
   const numericCount = nonNull.filter(v => !isNaN(parseFloat(v)) && isFinite(v)).length;
   if (numericCount / nonNull.length > 0.9) return 'number';
   
-  // Categorical: < 50 unique values
-  const unique = new Set(nonNull.map(String)).size;
-  if (unique <= 50) return 'categorical';
-  
-  return 'string';
+  // Everything else (text columns like Country, City, Agent etc.) = categorical
+  return 'categorical';
 };
 
 // Build filter config from schema + dataset
@@ -35,12 +32,12 @@ export const buildFilterConfig = (schema, dataset) => {
       
       if (detectedType === 'number') return null; // Skip pure numeric columns for filter UI
       
-      const uniqueValues = [...new Set(values.map(String))].sort();
+      const uniqueValues = [...new Set(values.map(String))].sort().slice(0, 200);
       
       return {
         column: col.name,
-        type: detectedType, // 'categorical', 'date', 'string'
-        options: detectedType === 'categorical' ? uniqueValues : [],
+        type: detectedType,
+        options: uniqueValues,
       };
     })
     .filter(Boolean);
