@@ -3,7 +3,8 @@ import { useDashboardStore } from '../store/useDashboardStore';
 import { useFilterStore } from '../store/useFilterStore';
 import { SaveDashboardModal } from './SaveDashboardModal';
 import { FilterPanel } from './FilterPanel';
-import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, ArrowRight, Type, Heading } from 'lucide-react';
+import { ShareModal } from './ShareModal';
+import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, ArrowRight, Type, Heading, Share2 } from 'lucide-react';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -15,6 +16,7 @@ export function DashboardBuilder() {
   const activeDataset = filteredDataset ?? dataset;
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   const widgetPanelRefs = useRef({});
 
   const handleCreateWidget = () => {
@@ -81,6 +83,13 @@ export function DashboardBuilder() {
           >
             <Plus className="w-4 h-4" />
             Add Chart
+          </button>
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="w-full flex items-center justify-center gap-2 bg-surface hover:bg-background border border-border py-2 rounded-lg transition-colors text-sm font-medium text-textMain"
+          >
+            <Share2 className="w-3.5 h-3.5 text-textMuted" />
+            Share
           </button>
           <button
             onClick={() => setShowSaveModal(true)}
@@ -302,6 +311,13 @@ export function DashboardBuilder() {
       </div>
 
       <SaveDashboardModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} />
+      {showShareModal && (
+        <ShareModal
+          dashboardId={useDashboardStore.getState().dashboardId}
+          dashboardTitle={useDashboardStore.getState().dashboardTitle}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </div>
   );
 }

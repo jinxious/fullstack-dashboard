@@ -7,6 +7,7 @@ import { FinalizeDashboard } from './components/FinalizeDashboard';
 import { AuthPage } from './components/AuthPage';
 import { MyDashboards } from './components/MyDashboards';
 import { TemplateLibrary } from './components/TemplateLibrary';
+import { SharedDashboardView } from './components/SharedDashboardView';
 import { useDashboardStore } from './store/useDashboardStore';
 import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from 'react-hot-toast';
@@ -253,6 +254,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Public shared dashboard — no auth required */}
+        <Route path="/view/:shareId" element={<SharedDashboardView />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </>

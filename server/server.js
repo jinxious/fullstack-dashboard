@@ -7,6 +7,7 @@ const dashboardRoutes = require('./routes/dashboards');
 const exportRoutes = require('./routes/export');
 const authRoutes = require('./routes/auth');
 const templateRoutes = require('./routes/templates');
+const shareRoutes = require('./routes/share');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboards', dashboardRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/share', shareRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -14,6 +14,7 @@ try {
 
 // In-memory fallback
 const memoryDB = {};
+module.exports.memoryDB = memoryDB;
 
 // GET /api/dashboards — list user's dashboards
 router.get('/', authMiddleware, async (req, res) => {
@@ -222,3 +223,4 @@ router.get('/:id', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.memoryDB = memoryDB;
