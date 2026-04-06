@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
+import { useFilterStore } from '../store/useFilterStore';
 import { SaveDashboardModal } from './SaveDashboardModal';
+import { FilterPanel } from './FilterPanel';
 import { Settings, BarChart2, PieChart as PieIcon, TrendingUp, Plus, Trash2, Hash, Filter, Percent, Save, ArrowRight, Type, Heading } from 'lucide-react';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -9,6 +11,8 @@ import { Widget } from './Widget';
 
 export function DashboardBuilder() {
   const { dataset, schema, widgets, addWidget, removeWidget, updateWidget, layout: storeLayout, setLayout, setStep } = useDashboardStore();
+  const { filteredDataset } = useFilterStore();
+  const activeDataset = filteredDataset ?? dataset;
   const [showSaveModal, setShowSaveModal] = useState(false);
 
   const handleCreateWidget = () => {
@@ -243,7 +247,9 @@ export function DashboardBuilder() {
       </div>
 
       {/* Main Canvas */}
-      <div className="flex-1 bg-background overflow-y-auto p-6 relative dashboard-canvas-container">
+      <div className="flex-1 flex flex-col bg-background overflow-hidden dashboard-canvas-container">
+        <FilterPanel />
+        <div className="flex-1 overflow-y-auto p-6 relative">
         {widgets.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-textMuted p-8 text-center max-w-sm mx-auto">
             <PieIcon className="w-16 h-16 text-border mb-4" />
@@ -264,11 +270,12 @@ export function DashboardBuilder() {
           >
             {widgets.map(widget => (
               <div key={widget.id}>
-                <Widget config={widget} dataset={dataset} onRemove={removeWidget} />
+                <Widget config={widget} dataset={activeDataset} onRemove={removeWidget} />
               </div>
             ))}
           </GridLayout>
         )}
+        </div>
       </div>
 
       <SaveDashboardModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} />
