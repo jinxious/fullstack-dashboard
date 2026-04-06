@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStore } from '../store/useDashboardStore';
+import { ShareModal } from './ShareModal';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import {
   LayoutDashboard, Plus, Trash2, Copy, Edit3, BarChart2,
-  Clock, ChevronRight, FileSpreadsheet, Loader2
+  Clock, FileSpreadsheet, Loader2, Globe, Lock, Share2,
+  Eye, ChevronRight
 } from 'lucide-react';
 
 export function MyDashboards() {
   const [dashboards, setDashboards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [shareTarget, setShareTarget] = useState(null); // { id, title }
   const { loadDashboard, resetDashboard } = useDashboardStore();
   const navigate = useNavigate();
 
@@ -27,9 +30,7 @@ export function MyDashboards() {
     }
   };
 
-  useEffect(() => {
-    fetchDashboards();
-  }, []);
+  useEffect(() => { fetchDashboards(); }, []);
 
   const handleOpen = async (id) => {
     try {
@@ -70,10 +71,19 @@ export function MyDashboards() {
     navigate('/dashboard');
   };
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
+  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+
+  const copyShareLink = (shareId) => {
+    const url = `${window.location.origin}/view/${shareId}`;
+    navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'));
+  };
+
+  // After ShareModal closes, refresh so public/private badge updates
+  const handleShareClose = () => {
+    setShareTarget(null);
+    fetchDashboards();
   };
 
   return (
@@ -126,17 +136,40 @@ export function MyDashboards() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {dashboards.map((dash) => {
             const id = dash._id || dash.id;
+            const isPublic = dash.isPublic || false;
+            const hasShareLink = !!dash.shareId;
+
             return (
               <div
                 key={id}
-                className="bg-surface border border-border rounded-xl overflow-hidden group hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/5"
+                className="bg-surface border border-border rounded-xl overflow-hidden group hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/5 flex flex-col"
               >
-                {/* Preview header bar */}
-                <div className="h-2 bg-gradient-to-r from-primary to-indigo-500" />
+                {/* Top gradient bar */}
+                <div className="h-2 bg-gradient-to-r from-primary to-indigo-500 shrink-0" />
 
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg truncate mb-1">{dash.title || 'Untitled'}</h3>
-                  <div className="flex items-center gap-4 text-xs text-textMuted mb-4">
+                <div className="p-5 flex flex-col flex-1">
+                  {/* Title row + public/private badge */}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-semibold text-lg truncate">{dash.title || 'Untitled'}</h3>
+                    {/* Public / Private badge */}
+                    {hasShareLink ? (
+                      <span className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                        isPublic
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : 'bg-surface text-textMuted border-border'
+                      }`}>
+                        {isPublic ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                        {isPublic ? 'Public' : 'Private'}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-surface text-textMuted border-border">
+                        <Lock className="w-2.5 h-2.5" /> Not shared
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-4 text-xs text-textMuted mb-3">
                     <span className="flex items-center gap-1">
                       <BarChart2 className="w-3 h-3" />
                       {dash.widgets?.length || 0} widgets
@@ -145,10 +178,16 @@ export function MyDashboards() {
                       <Clock className="w-3 h-3" />
                       {formatDate(dash.updatedAt || dash.createdAt)}
                     </span>
+                    {isPublic && dash.viewCount > 0 && (
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <Eye className="w-3 h-3" />
+                        {dash.viewCount} views
+                      </span>
+                    )}
                   </div>
 
                   {/* Schema tags */}
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="flex flex-wrap gap-1 mb-4 flex-1">
                     {(dash.schema || []).slice(0, 4).map((col) => (
                       <span key={col.name} className="text-[10px] px-2 py-0.5 bg-background border border-border rounded-full text-textMuted">
                         {col.name}
@@ -161,7 +200,18 @@ export function MyDashboards() {
                     )}
                   </div>
 
-                  {/* Actions */}
+                  {/* Quick copy link (only if has shareId and is public) */}
+                  {hasShareLink && isPublic && (
+                    <button
+                      onClick={() => copyShareLink(dash.shareId)}
+                      className="w-full flex items-center justify-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 py-1.5 rounded-lg transition-colors mb-3 font-medium"
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                      Copy share link
+                    </button>
+                  )}
+
+                  {/* Action buttons */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleOpen(id)}
@@ -170,6 +220,20 @@ export function MyDashboards() {
                       <Edit3 className="w-3.5 h-3.5" />
                       Open
                     </button>
+
+                    {/* Share button */}
+                    <button
+                      onClick={() => setShareTarget({ id, title: dash.title || 'Untitled' })}
+                      className={`p-2 rounded-lg transition-colors border ${
+                        isPublic
+                          ? 'text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 bg-emerald-500/5'
+                          : 'text-textMuted hover:text-primary hover:bg-primary/10 border-border'
+                      }`}
+                      title="Share"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+
                     <button
                       onClick={() => handleDuplicate(id)}
                       className="p-2 text-textMuted hover:text-textMain hover:bg-background rounded-lg transition-colors border border-border"
@@ -191,6 +255,15 @@ export function MyDashboards() {
             );
           })}
         </div>
+      )}
+
+      {/* Share Modal */}
+      {shareTarget && (
+        <ShareModal
+          dashboardId={shareTarget.id}
+          dashboardTitle={shareTarget.title}
+          onClose={handleShareClose}
+        />
       )}
     </div>
   );

@@ -21,7 +21,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     if (process.env.MONGODB_URI && Dashboard) {
       const dashboards = await Dashboard.find({ userId: req.user.id })
-        .select('title widgets layout schema createdAt updatedAt dataFilename')
+        .select('title widgets layout schema createdAt updatedAt dataFilename isPublic shareId linkAccess viewCount')
         .sort({ updatedAt: -1 });
       return res.json({ success: true, dashboards });
     } else {
