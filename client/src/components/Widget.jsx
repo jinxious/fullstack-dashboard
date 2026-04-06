@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell, LabelList } from 'recharts';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Settings2 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 
 const PALETTES = {
@@ -93,7 +93,7 @@ export const aggregateData = (dataset, xKey, yKey, type, aggType, filters = []) 
   return processedData.slice(0, 100);
 };
 
-export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) => {
+export const Widget = ({ config, dataset, onRemove, onSettings, inFinalizeMode = false }) => {
   const { dashboardTheme, isExporting, updateWidget } = useDashboardStore();
   const data = useMemo(() => aggregateData(dataset, config.xAxis, config.yAxis, config.type, config.aggType, config.filters), [dataset, config]);
   
@@ -238,9 +238,24 @@ export const Widget = ({ config, dataset, onRemove, inFinalizeMode = false }) =>
             <h3 className="font-bold text-sm truncate pr-2">{config.title || 'Untitled Chart'}</h3>
           )}
           {!isExporting && onRemove && (
-            <button onMouseDown={(e) => { e.stopPropagation(); onRemove(config.id); }} className="text-textMuted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity relative z-50 pointer-events-auto">
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onSettings && (
+                <button
+                  onMouseDown={(e) => { e.stopPropagation(); onSettings(config.id); }}
+                  className="text-textMuted hover:text-primary transition-colors relative z-50 pointer-events-auto"
+                  title="Widget settings"
+                >
+                  <Settings2 className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onMouseDown={(e) => { e.stopPropagation(); onRemove(config.id); }}
+                className="text-textMuted hover:text-red-400 transition-colors relative z-50 pointer-events-auto"
+                title="Delete widget"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
       )}

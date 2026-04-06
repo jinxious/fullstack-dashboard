@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { useFilterStore } from '../store/useFilterStore';
 import { SaveDashboardModal } from './SaveDashboardModal';
@@ -14,10 +14,13 @@ export function DashboardBuilder() {
   const { filteredDataset } = useFilterStore();
   const activeDataset = filteredDataset ?? dataset;
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [selectedWidgetId, setSelectedWidgetId] = useState(null);
+  const widgetPanelRefs = useRef({});
 
   const handleCreateWidget = () => {
+    const newId = Date.now().toString();
     addWidget({
-      id: Date.now().toString(),
+      id: newId,
       type: 'bar',
       title: 'New Chart',
       xAxis: schema?.[0]?.name || '',
@@ -25,6 +28,18 @@ export function DashboardBuilder() {
       aggType: 'sum',
       filters: []
     });
+    // Auto-select the new widget's settings panel
+    setTimeout(() => {
+      setSelectedWidgetId(newId);
+      widgetPanelRefs.current[newId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  const handleSettings = (id) => {
+    setSelectedWidgetId(id);
+    setTimeout(() => {
+      widgetPanelRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 30);
   };
 
   const layout = widgets.map((w, i) => {
@@ -83,7 +98,15 @@ export function DashboardBuilder() {
             </div>
           )}
           {widgets.map((widget, index) => (
-            <div key={widget.id} className="bg-background rounded-lg border border-border p-4">
+            <div
+              key={widget.id}
+              ref={el => widgetPanelRefs.current[widget.id] = el}
+              className={`rounded-lg border p-4 transition-all duration-200 ${
+                selectedWidgetId === widget.id
+                  ? 'bg-primary/5 border-primary/40 shadow-md shadow-primary/10'
+                  : 'bg-background border-border'
+              }`}
+            >
               <div className="mb-3 flex items-center gap-2">
                 <Settings className="w-4 h-4 text-primary" />
                 <span className="font-semibold text-sm">Widget {index + 1}</span>
@@ -270,7 +293,7 @@ export function DashboardBuilder() {
           >
             {widgets.map(widget => (
               <div key={widget.id}>
-                <Widget config={widget} dataset={activeDataset} onRemove={removeWidget} />
+                <Widget config={widget} dataset={activeDataset} onRemove={removeWidget} onSettings={handleSettings} />
               </div>
             ))}
           </GridLayout>
