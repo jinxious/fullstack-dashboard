@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
-import { UploadSection } from './components/UploadSection';
+import { LandingPage } from './components/LandingPage';
 import { DataPreview } from './components/DataPreview';
 import { DashboardBuilder } from './components/DashboardBuilder';
 import { FinalizeDashboard } from './components/FinalizeDashboard';
@@ -29,7 +29,7 @@ function DashboardFlow() {
   const { currentStep } = useDashboardStore();
   return (
     <>
-      {currentStep === 1 && <UploadSection />}
+      {currentStep === 1 && <LandingPage />}
       {currentStep === 2 && <DataPreview />}
       {currentStep === 3 && <DashboardBuilder />}
       {currentStep === 4 && <FinalizeDashboard />}
@@ -130,7 +130,8 @@ function AppLayout({ children }) {
         </div>
       )}
 
-      <header className="h-16 border-b border-border bg-surface/50 backdrop-blur shrink-0 px-6 flex items-center justify-between sticky top-0 z-50">
+      {currentStep !== 1 && (
+        <header className="h-16 border-b border-border bg-surface/50 backdrop-blur shrink-0 px-6 flex items-center justify-between sticky top-0 z-50">
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-6">
           <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -198,7 +199,8 @@ function AppLayout({ children }) {
             </div>
           )}
         </div>
-      </header>
+        </header>
+      )}
 
       <main className="flex-1 flex flex-col">
         {children}
